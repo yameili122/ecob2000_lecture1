@@ -1,0 +1,121 @@
+---
+title: "homework1"
+author: "Yamei Li" 
+date: "9/12/2020"
+output: html_document
+---
+question1:
+my group member are: Meirou Guan and Tamires Amorim
+
+question 2:
+I rolled a dice 20 times, what the result was:
+ 5,1,5,2,3, 1,1,4,6,4,
+ 5,4,2,4,6, 2,1,5,3,1.
+ 2 out of 20 times I rolled 6. In fact, it is more less than I expect, because I think the result should be 3 or 4.
+I wrote some code in R to simulate a fair roll
+
+```{r}
+dice<-c(1,2,3,4,5,6)
+sample(dice, size=20, replace=TRUE)
+sample
+```
+
+ we can get 3 out of 20 times rolled 6,according to the probability it is a fair roll,if we want to get more often 6, we can write some code,like:
+```{r}
+dice<-c(2,3,4,5,6)
+sample(dice, size=20, replace=TRUE)
+sample
+```
+```{r}
+roll_die = function(n) sample(1:6, n, rep = T,prob = c(rep(1/7, 5), 2/7))
+roll_die(20)
+```
+The first function is a simulation of a fair roll, where we rolled the die 20 times and the number 6 appeared three times. On the second function we manipulate the numbers to create the event “6” more often than on a fair roll. In the real world a die or a pair of dice, can be manipulated by drilling, sanding or heating to weight one side of the dice, this is the only way to increase the chances of obtaining the same number more than expected. Otherwise, since the events are independent within a sample the probability of a 6 to come will always be 1/6, no matter the amount of rolls.
+
+question 4:
+Practice R Basics for lecture 1.
+```{r}
+load("acs2017_ny_data.RData")
+#glimpse(acs2017_ny) try this later
+acs2017_ny[1:10,1:7]
+summary(acs2017_ny)
+
+```
+
+As we can see from the data, An average of 0.3615 of people have been educated in New York  City, however, educational attainments in different neighborhoods in the New York city is differently, in Bronx, the mean is 0.0538, It is much lower than the average for New York as a whole, a testament to the low level of education in this area, in contrast, In Manhattan, the mean is 0.04981, In StatenI, the mean is 0.02084, In Brooklyn, the mean os 0.126, In Queens, the mean is 0.1111, the Brooklyn has lowest probability however Bronx has highest probability.
+
+Question 5:
+  I collect a month(from 08.06.2020-09.10.2020) data from this link https://finance.yahoo.com/quote/%5EGSPC/history/ to analyze the daily return of SP500 index, then i calculate it on excel and the mean of the daily return is 0.000992144.as you can see the following data.
+
+
+|-----------------|----------|----------|----------|
+|| Date     | Open     | High     | Low      | Close          | daily return |
+| Sept\. 10, 2020 | 3412\.56 | 3425\.55 | 3329\.25 | 3339\.19 | 0\.023678      |
+| Sept\. 9, 2020  | 3369\.82 | 3424\.77 | 3366\.84 | 3398\.96 | 0\.017584791   |
+| Sept\. 8, 2020  | 3371\.88 | 3379\.97 | 3329\.27 | 3331\.84 | \-0\.020145025 |
+| Sept\. 4, 2020  | 3453\.6  | 3479\.15 | 3349\.63 | 3426\.96 | 0\.027756379   |
+| Sept\. 3, 2020  | 3564\.74 | 3564\.85 | 3427\.41 | 3455\.06 | 0\.008132999   |
+| Sept\. 2, 2020  | 3543\.76 | 3588\.11 | 3535\.23 | 3580\.84 | 0\.035125836   |
+| Sept\. 1, 2020  | 3507\.44 | 3528\.03 | 3494\.6  | 3526\.65 | \-0\.015365857 |
+| Aug\. 31, 2020  | 3509\.73 | 3514\.77 | 3493\.25 | 3500\.31 | \-0\.007525048 |
+| Aug\. 28, 2020  | 3494\.69 | 3509\.23 | 3484\.32 | 3508\.01 | 0\.002194977   |
+| Aug\. 27, 2020  | 3485\.14 | 3501\.38 | 3468\.35 | 3484\.55 | \-0\.006732577 |
+| Aug\. 26, 2020  | 3449\.97 | 3481\.07 | 3444\.15 | 3478\.73 | \-0\.001673024 |
+| Aug\. 25, 2020  | 3435\.95 | 3444\.21 | 3425\.84 | 3443\.62 | \-0\.010195666 |
+| Aug\. 24, 2020  | 3418\.09 | 3432\.09 | 3413\.13 | 3431\.28 | \-0\.003596326 |
+| Aug\. 21, 2020  | 3386\.01 | 3399\.96 | 3379\.31 | 3397\.16 | \-0\.010043684 |
+| Aug\. 20, 2020  | 3360\.48 | 3390\.8  | 3354\.69 | 3385\.51 | \-0\.003441136 |
+| Aug\. 19, 2020  | 3392\.51 | 3399\.54 | 3369\.66 | 3374\.85 | \-0\.003158659 |
+| Aug\. 18, 2020  | 3387\.04 | 3395\.06 | 3370\.15 | 3389\.78 | 0\.004404416   |
+| Aug\. 17, 2020  | 3380\.86 | 3387\.59 | 3379\.22 | 3381\.99 | \-0\.002303378 |
+| Aug\. 14, 2020  | 3368\.66 | 3378\.51 | 3361\.64 | 3372\.85 | \-0\.002709874 |
+| Aug\. 13, 2020  | 3372\.95 | 3387\.24 | 3363\.35 | 3373\.43 | 0\.000171932   |
+| Aug\. 12, 2020  | 3355\.46 | 3387\.89 | 3355\.46 | 3380\.35 | 0\.002047125   |
+| Aug\. 11, 2020  | 3370\.34 | 3381\.01 | 3326\.44 | 3333\.69 | \-0\.013996502 |
+| Aug\. 10, 2020  | 3356\.04 | 3363\.29 | 3335\.44 | 3360\.47 | 0\.007969123   |
+| Aug\. 7, 2020   | 3340\.05 | 3352\.54 | 3328\.72 | 3351\.28 | \-0\.002742236 |
+| Aug\. 6, 2020   | 3323\.17 | 3351\.03 | 3318\.14 | 3349\.16 | \-0\.000632995 |
+|                 |          |          |          |          |                |
+
+when the previous day’s return was positive,for example, on Aug 10 the day's return was positive, however on Aug 11,it was negative return. We also can see that from Aug 19 to Aug 27, they were all negative.The mean return on S&P500 index from August 26th to September 10th presented 11 days with positive return against 15 days with negative returns. There was no clear sequence on the positive or negative daily returns.  For instance, from September 2nd to September 4th the daily returns were positive, although on September 8 it was negative, then followed by positive returns for the remaining days.
+In the decision-making process, investors can look for past returns of the S&P500 index and use it as a source of information for predicting future outcomes. Although, as studies has shown this kind of prediction can be biased, because streaks of last outcomes do not mean continued success. This assumption is called “Hot hands Fallacy”, a term brought from the belief that basketball players that score more in a game have greater probability of keeping their scores in the next games, which is not true, given the randomness of the event, according to JOSHUA B. MILLER and ADAM SANJURJO in the paper SURPRISED BY THE HOT HAND FALLACY? A TRUTH IN THE LAW OF SMALL NUMBERS: “…the bias can be leveraged to manipulate people into believing that the outcomes of an unpredictable process can be predicted at rates better than chance”.
+“Hot hand fallacy” was a considered a cognitive social bias that a person who experiences a successful outcome has a greater chance of success in further attempts.
+For example, investors piled into the fund during its run-up, with most inflows occurring near the investment’s peak. Investors then fled as the fund’s returns plummeted, with most outflows occurring near the investment’s bottom.Buying high and selling low is not a worthwhile investment philosophy! 
+```{r}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
