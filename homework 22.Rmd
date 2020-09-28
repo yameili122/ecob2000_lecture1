@@ -1,0 +1,141 @@
+---
+title: "homework2"
+author: "Yamei Li, Meirou Guan, Tamires Amorim"
+date: "9/20/2020"
+output: html_document
+---
+question1: 
+if the dice were fair it means when we roll a die one time, the result could not be 6.So,the probability of being unfair=1/6=16.66% 
+If the dice are unfair, we don't know what is the probability of fair dice, for example, when six sides both are number 6, the probability of fair dice should be 1. If a die have two sides of number 6, the probability of fair dice should be 2/6. on the other hand, we don't know what the dice are made of, Is it even or not, all of them can influence the result, the conclusion is that we don't know the probability of fair dice.
+
+question2:
+First, we assumed dice is fair and roll dice 30 times, we could compare them to the outcomes we would expect for a fair die,in other words we would expect each number on the die to be rolled about 1/6,so he expect value of the random variable X would be calculated E(X)=np
+    =30* 1/6
+    =5
+Thus,we would expect each number to be rolled about 5 times out of 30 rolls if the die is fair.they obey the binomial distribution, according to binomial distribution,
+the standard deviation=sqrt(30* 1/6*5/6)=2.04
+we need to roll a die for 30 times, the result are follows:
+```{r}
+a<-sample(1:6,size=30,replace = T)
+print(a)
+table(a)
+```
+Although each number did not get rolled exactly 5 times as we predicted,next,we will use a hypothesis to test with statistic.
+(1)we can write the null and alternative hypotheses  as follows:
+Ho: p1=p2=p3=p4=p5=p6=1/6
+Ha: there is some difference amongst the probabilities
+(2) The sample data are randomly selected, and the np>5 and n(1-p)>5,the condition for a binominal distribution are met,so,we can use chi-square statistic to test.We set the level of significance given in the problem is a=0.05 .
+(3)We use chi-square to tset:
+```{r}
+chisq.test(table(a),p=rep(1/6,6))
+
+```
+(4) Conclusion
+P-value=0.6692>0.05,so the conclusion is to fail to reject the null hypothesis.In other words, there is  not sufficient evidence at the 0.05 level of significance to support there is some difference amongst the probabilities, so the dice is fair.
+
+
+```{r}
+x<-pbinom(5,30,1/6)
+print(x)
+```
+this code resuly means the probability of getting 5 or less 6 from 30 roll dice is 0.616447,and we also wirte following code to calculate the probability of the time number 6 comes up equal to 6,7,8. according to the result, we can found that when the times of number 6 comes up increase one time, the probability will decrease a lot.
+```{r}
+x<-dbinom(6,30,1/6)
+print(x)
+```
+
+```{r}
+x<-dbinom(7,30,1/6)
+print(x)
+```
+
+```{r}
+x<-dbinom(8,30,1/6)
+print(x)
+```
+
+question3:
+We rolled the die 100 times, and the frequency distribution was uneven, with a large gap. It seems that the number probability of each die is not equal, but if the number of repeats continues to increase to 1000 times, we can find from the graph that the frequency of each die gradually tightens to a straight line. We also know the frequency distribution are obey the uniform distribution.
+According to the question 2, we know that the probability of number 6 comes up are obey the standard normal distribution.
+(1)we can write the null and alternative hypotheses  as follows:
+Ho: p1=p2=p3=p4=p5=p6
+Ha: there is some difference amongst the probabilities
+(2) The sample data are randomly selected, and the np>5 and n(1-p)>5,the condition for a binominal distribution are met,so,we can use chi-square statistic to test.We set the level of significance given in the problem is a=0.05 .
+(3)We use chi-square to tset:
+```{r}
+a<-sample(1:6,size=30,replace = T)
+print(a)
+table(a)
+library(ggplot2)
+qplot(a,binwidth=1)
+chisq.test(table(a),p=rep(1/6,6))
+
+```
+
+```{r}
+a<-sample(1:6,size=100,replace = T)
+print(a)
+table(a)
+chisq.test(table(a),p=rep(1/6,6))
+qplot(a,binwidth=1)
+
+```
+
+```{r}
+library(ggplot2)
+a<-sample(1:6,size=10000,replace = T)
+table(a)
+chisq.test(table(a),p=rep(1/6,6))
+qplot(a,binwidth=1)
+```
+```{r}
+library(ggplot2)
+a<-sample(1:6,size=100000,replace = T)
+table(a)
+chisq.test(table(a),p=rep(1/6,6))
+qplot(a,binwidth=1)
+```
+(4) Conclusion
+all the P-value are greater than 0.05,so the conclusion is to fail to reject the null hypothesis.In other words, there is  not sufficient evidence at the 0.05 level of significance to support there is some difference amongst the probabilities, so the dice is fair.
+
+```{r}
+a<-sample(1:6,size=100,replace = T)
+mean(a)
+```
+we roll 100 times, the average of the result is 3.14.
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
