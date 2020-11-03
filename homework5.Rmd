@@ -1,0 +1,137 @@
+---
+title: "homework5"
+author: "Yamei Li, Meirou Guan, Tamires Amorim, Carol-Ann Jackson"
+date: "10/29/2020"
+output: html_document
+---
+we improve some of our regression models to explain wages, we want to look at wages for Asian women with at least a college degree。
+```{r}
+setwd("/Users/yameili/Desktop/ecob2000_lecture1/acs2017_ny")
+load("acs2017_ny_data.Rdata")
+attach(acs2017_ny)
+use_varb <- (AGE >= 25) & (AGE <= 55) & (LABFORCE == 2) & (WKSWORK2 > 4) & (UHRSWORK >= 35) & (Asian == 1)
+dat_use <- subset(acs2017_ny,use_varb) # 
+detach()
+attach(dat_use)
+```
+At the beginning, I do the nonlinear regression between the wage and age and age-squared.
+```{r}
+lm1<-lm(INCWAGE~AGE+I(AGE^2),data=dat_use)
+par(mfrow=c(2,2))
+plot(lm1,col="grey",pch=16,cex=1,lwd=1,lty=2)
+summary(lm1)
+require(stargazer)
+stargazer(lm1, type = "text")
+require(AER)
+NNobs <- length(INCWAGE)
+set.seed(12345) 
+graph_obs <- (runif(NNobs) < 0.1) 
+dat_graph <-subset(dat_use,graph_obs) 
+a<-plot(INCWAGE ~ jitter(AGE, factor = 2), pch = 16, col = rgb(0.5, 0.7, 0.8, alpha = 0.8), ylim = c(0,150000), data = dat_graph)
+summary(a)
+to_be_predicted1 <- data.frame(AGE = 25:55, female = 1, AfAm = 0, Asian = 1, Amindian = 0, race_oth = 0, Hispanic =0, educ_hs = 0, educ_somecoll = 0, educ_college = 1, educ_advdeg = 0)
+to_be_predicted1$yhat <- predict(lm1, newdata = to_be_predicted1)
+lines(yhat ~ AGE, data = to_be_predicted1)
+```
+we can see that the p-value of AGE and AGE^2 are both less than 0.01 at confidence level, so we think they are significantly.the regression function is  
+Y= -129.56X^2+10737.23X-135204.43 . when we do first derivative, -259.12x+10737.23=0,we can get x=41.4,so when we are 41.4,we can get the peak of predicted wage,which equals -129.56* 41.4^2+10737.23 *41.4-135204.43=87256.23.
+we can get a conclusion, one female Asian person who has a college degree, she can get the peak income 87256.23  when she 41.4 years old.
+
+```{r}
+lm2<-lm(INCWAGE~AGE+I(AGE^2)+I(AGE^3)+I(AGE^4),data=dat_use)
+summary(lm2)
+NNobs <- length(INCWAGE)
+set.seed(22222) 
+graph_obs <- (runif(NNobs) < 0.1) 
+dat_graph <-subset(dat_use,graph_obs) 
+b<-plot(INCWAGE ~ jitter(AGE, factor = 2), pch = 16, col = rgb(0.5, 0.7, 0.8, alpha = 0.8), ylim = c(0,150000), data = dat_graph)
+to_be_predicted2 <- data.frame(AGE = 25:55, female = 1, AfAm = 0, Asian = 1, Amindian = 0, race_oth = 0, Hispanic =0, educ_hs = 0, educ_somecoll = 0, educ_college = 1, educ_advdeg = 0)
+to_be_predicted2$yhat <- predict(lm2, newdata = to_be_predicted2)
+lines(yhat ~ AGE, data = to_be_predicted2)
+```
+when we add higher order polynomials of age, such as (Age^3) and (Age^4), after do a hypothesis test, we can see that all of the p-value are less than 0.01,those higher-order polynomial terms are significantly.
+
+```{r}
+lm3<-lm(INCWAGE~log(AGE)+I(log(AGE^2)),data=dat_use)
+summary(lm3)
+```
+when we use log(AGE^2) to do regression, I get NA, for p-value, they are not significantly, it will change the significant level. The reason is that i get a perfect multicolinearity when I put log(AGE^2) with log(AGE), so it is useless.
+```{r}
+lm4<-lm(INCWAGE~AGE+I(AGE^2)+educ_college+educ_advdeg,data=dat_use)
+summary(lm4)
+NNobs <- length(INCWAGE)
+set.seed(33333) 
+graph_obs <- (runif(NNobs) < 0.1) 
+dat_graph <-subset(dat_use,graph_obs) 
+b<-plot(INCWAGE ~ jitter(AGE, factor = 2), pch = 16, col = rgb(0.5, 0.7, 0.8, alpha = 0.8), ylim = c(0,150000), data = dat_graph)
+to_be_predicted3 <- data.frame(AGE = 25:55, female = 1, AfAm = 0, Asian = 1, Amindian = 0, race_oth = 0, Hispanic =0, educ_hs = 0, educ_somecoll = 0, educ_college = 1, educ_advdeg = 0)
+to_be_predicted3$yhat <- predict(lm4, newdata = to_be_predicted3)
+lines(yhat ~ AGE, data = to_be_predicted3)
+```
+The interpretation of coefficient on educ_college in my subset is that keep the other variables constant, when a female get a college degree, her income will increase 49402.16.
+I choose for dummy variables in my regression,educ_hs;educ_somecoll;duc_college and educ_advdeg, the reason why i couldn't add educ_nohs variable is because if i add it, there have a Dummy Variable Trap.
+```{r}
+lm5<-lm(INCWAGE~AGE+I(AGE^2)+educ_hs+educ_somecoll+educ_college+educ_advdeg,data=dat_use)
+summary(lm5)
+NNobs <- length(INCWAGE)
+set.seed(44444) 
+graph_obs <- (runif(NNobs) < 0.1) 
+dat_graph <-subset(dat_use,graph_obs) 
+b<-plot(INCWAGE ~ jitter(AGE, factor = 2), pch = 16, col = rgb(0.5, 0.7, 0.8, alpha = 0.8), ylim = c(0,150000), data = dat_graph)
+to_be_predicted4 <- data.frame(AGE = 25:55, female = 1, AfAm = 0, Asian = 1, Amindian = 0, race_oth = 0, Hispanic =0, educ_hs = 0, educ_somecoll = 0, educ_college = 0, educ_advdeg = 1)
+to_be_predicted4$yhat <- predict(lm5, newdata = to_be_predicted4)
+lines(yhat ~AGE , data = to_be_predicted4)
+```
+we can see from the result, high school degree is not significantly with the income wage, because the p value is 0.151 greater than 0.01, except the high school degree, other variables are all significantly on the confidence level. we also can know that there are positive relationship between the degree with income, especially  People with higher education level tend to have higher incomes, and a master's or bachelor's degree can make people earn more money.if you get college degree, your income will increase  60345.25, and if you get advance degree, your income will increase  89483.11.
+```{r}
+lm6<-lm(log1p(INCWAGE)~AGE+I(AGE^2)+educ_hs+educ_somecoll+educ_college+educ_advdeg,data=dat_use)
+summary(lm6)
+NNobs <- length(log1p(INCWAGE))
+set.seed(44444) 
+graph_obs <- (runif(NNobs) < 0.1) 
+dat_graph <-subset(dat_use,graph_obs) 
+plot(log1p(INCWAGE) ~ jitter(AGE, factor = 2), pch = 16, col = rgb(0.5, 0.7, 0.8, alpha = 0.8), ylim = c(0,15), data = dat_graph)
+to_be_predicted5 <- data.frame(AGE = 25:55, female = 1, AfAm = 0, Asian = 1, Amindian = 0, race_oth = 0, Hispanic =0, educ_hs = 0, educ_somecoll = 0, educ_college = 0, educ_advdeg = 1)
+to_be_predicted5$yhat <- predict(lm6, newdata = to_be_predicted5)
+lines(yhat ~AGE , data = to_be_predicted5)
+```
+```{r}
+lm7<-lm(INCWAGE ~ AGE + I(AGE^2) + female + I(female*AGE) + I(female*(AGE^2))+educ_somecoll+educ_college+educ_advdeg,data=dat_use)
+NNobs <- length(INCWAGE)
+set.seed(66666) 
+graph_obs <- (runif(NNobs) < 0.1) 
+dat_graph <-subset(dat_use,graph_obs) 
+plot(INCWAGE ~ jitter(AGE, factor = 2), pch = 16, col = rgb(0.5, 0.7, 0.8, alpha = 0.8), ylim = c(0,150000), data = dat_graph)
+to_be_predicted6 <- data.frame(AGE = 25:55, female = 1, AfAm = 0, Asian =1, Amindian = 0, race_oth = 0, Hispanic =0, educ_hs = 0, educ_somecoll = 0, educ_college = 1, educ_advdeg = 0)
+to_be_predicted6$yhat <- predict(lm7, newdata = to_be_predicted6)
+lines(yhat ~ AGE, data = to_be_predicted6,col="red",lwd=2)
+to_be_predicted7 <- data.frame(AGE = 25:55, female = 0, AfAm = 0, Asian =1, Amindian = 0, race_oth = 0, Hispanic =0, educ_hs = 0, educ_somecoll = 0, educ_college = 1, educ_advdeg = 0)
+to_be_predicted7$yhat <- predict(lm7, newdata = to_be_predicted7)
+lines(yhat ~ AGE, data = to_be_predicted7,col="blue",lty=3,lwd=4)
+legend("topleft", c("male", "female"), lty = c(2,1), bty = "n")
+
+```
+we can see that there is a gap between female and male, men's wage are higher than women's wage.
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
