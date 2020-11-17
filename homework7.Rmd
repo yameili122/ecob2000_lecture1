@@ -1,0 +1,223 @@
+---
+title: "Homework7"
+output: github_document
+author: "Yamei Li, Meirou Guan, Tamires Amorim,Carol-Ann Jackson,"
+---
+```{r}
+load("/Users/yameili/Desktop/ecob2000_lecture1/NHIS_2014.RData")
+attach(data_use1)
+max(AGE_P)
+use_varb <- (AGE_P >= 25) & (AGE_P <= 55)
+dat_use <- subset(data_use1,use_varb) # 
+detach()
+attach(dat_use)
+```
+
+```{r}
+str(dat_use)
+earn_lastyr <- as.factor(ERNYR_P)
+str(earn_lastyr)
+```
+```{r}
+levels(earn_lastyr) <- c("0","$01-$4999","$5000-$9999","$10000-$14999","$15000-$19999","$20000-$24999","$25000-$34999","$35000-$44999","$45000-$54999","$55000-$64999","$65000-$74999","$75000 and over",NA,NA,NA)
+summary(earn_lastyr)
+```
+Here we are looking into the insurance coverage as dependent variable, and age, gender, race, education, marital status and region as the explanatory variables for the insurance coverage.
+```{r}
+model_logit1 <- glm(NOTCOV ~ AGE_P + I(AGE_P^2) + female + AfAm + Asian + RaceOther  
+                    + Hispanic + educ_hs + educ_smcoll + educ_as + educ_bach + educ_adv 
+                    + married + widowed + divorc_sep + veteran_stat + REGION + region_born,
+                    family = binomial, data = dat_use)
+model_logit1
+```
+
+For the simple linear regression (glm function) it is not necessary to set the variables in a data frame. Although for the new models we are using it will be necessary. Below is the data frame with the list of variables set to have the same number of rows with unique row names in the class “data.frame”. Because it includes a matrix it will force the columns names to have unique results.
+```{r}
+d_region <- data.frame(model.matrix(~ dat_use$REGION))
+d_region_born <- data.frame(model.matrix(~ factor(dat_use$region_born)))  # snips any with zero in the subgroup
+dat_for_analysis_sub <- data.frame(
+  dat_use$NOTCOV,
+  dat_use$AGE_P,
+  dat_use$female,
+  dat_use$AfAm,
+  dat_use$Asian,
+  dat_use$RaceOther,
+  dat_use$Hispanic,
+  dat_use$educ_hs,
+  dat_use$educ_smcoll,
+  dat_use$educ_as,
+  dat_use$educ_bach,
+  dat_use$educ_adv,
+  dat_use$married,
+  dat_use$widowed,
+  dat_use$divorc_sep,
+  d_region[,2:4],
+  d_region_born[,2:12])
+```
+
+```{r}
+names(dat_for_analysis_sub) <- c("NOTCOV",
+                                 "Age",
+                                 "female",
+                                 "AfAm",
+                                 "Asian",
+                                 "RaceOther",
+                                 "Hispanic",
+                                 "educ_hs",
+                                 "educ_smcoll",
+                                 "educ_as",
+                                 "educ_bach",
+                                 "educ_adv",
+                                 "married",
+                                 "widowed",
+                                 "divorc_sep",
+                                 "Region.Midwest",
+                                 "Region.South",
+                                 "Region.West",
+                                 "born.Mex.CentAm.Carib",
+                                 "born.S.Am",
+                                 "born.Eur",
+                                 "born.f.USSR",
+                                 "born.Africa",
+                                 "born.MidE",
+                                 "born.India.subc",
+                                 "born.Asia",
+                                 "born.SE.Asia",
+                                 "born.elsewhere",
+                                 "born.unknown")
+```
+
+The goal here is to keep the regression parameters in a similar scale, and ensure that the intercept represents the corrected mean, this way the output of the regression will be easier to interpret.Following, we split into training and test sets, 
+```{r}
+library(standardize)
+set.seed(654321)
+NN <- length(dat_for_analysis_sub$NOTCOV)
+# restrict_1 <- as.logical(round(runif(NN,min=0,max=0.6))) # use fraction as training data
+restrict_1 <- (runif(NN) < 0.1) # use 10% as training data
+summary(restrict_1)
+dat_train <- subset(dat_for_analysis_sub, restrict_1)
+dat_test <- subset(dat_for_analysis_sub, !restrict_1)
+sobj <- standardize(NOTCOV ~ Age + female + AfAm + Asian + RaceOther + Hispanic + 
+                      educ_hs + educ_smcoll + educ_as + educ_bach + educ_adv + 
+                      married + widowed + divorc_sep + 
+                      Region.Midwest + Region.South + Region.West + 
+                      born.Mex.CentAm.Carib + born.S.Am + born.Eur + born.f.USSR + 
+                      born.Africa + born.MidE + born.India.subc + born.Asia + 
+                      born.SE.Asia + born.elsewhere + born.unknown, dat_train, family = binomial)
+
+s_dat_test <- predict(sobj, dat_test)
+
+
+```
+
+The goal with this model is to understand how to call the standardized objects from above and interpret the results with the “traditional model” of linear regression. The lm function.
+```{r}
+model_lpm1 <- lm(sobj$formula, data = sobj$data)
+summary(model_lpm1)
+pred_vals_lpm <- predict(model_lpm1, s_dat_test)
+pred_model_lpm1 <- (pred_vals_lpm > 0.5)
+table(pred = pred_model_lpm1, true = dat_test$NOTCOV)
+
+```
+```{r}
+summary(sobj$data)
+```
+
+```{r}
+model_logit1 <- glm(sobj$formula, family = binomial, data = sobj$data)
+summary(model_logit1)
+pred_vals <- predict(model_logit1, s_dat_test, type = "response")
+pred_model_logit1 <- (pred_vals > 0.5)
+table(pred = pred_model_logit1, true = dat_test$NOTCOV)
+```
+```{r}
+library(e1071)
+# tuned_parameters <- tune.svm(as.factor(NOTCOV) ~ ., data = sobj$data, gamma = 10^(-3:0), cost = 10^(-2:1)) 
+# summary(tuned_parameters)
+# figure best parameters and input into next
+svm.model <- svm(as.factor(NOTCOV) ~ ., data = sobj$data, cost = 10, gamma = 0.1)
+svm.pred <- predict(svm.model, s_dat_test)
+table(pred = svm.pred, true = dat_test$NOTCOV)
+```
+```{r}
+#LOSSO
+x_varb <- cbind(AGE_P,I(AGE_P^2), female, AfAm, Asian , RaceOther, Hispanic, educ_hs, educ_smcoll, educ_as, educ_bach, educ_adv, married, widowed, divorc_sep, veteran_stat, REGION, region_born)
+stand_Z <- function(X) {
+rval <- matrix(data = NA, nrow = nrow(X), ncol = ncol(X))
+for(j in 1:ncol(X)) rval[,j] <- (X[,j] - mean(X[,j]))/sd(X[,j])
+return(rval)
+}
+x_varb_dm <- stand_Z(x_varb)
+dimnames(x_varb_dm) <- dimnames(x_varb)
+library(lars)
+model_lars <- lars(x_varb_dm,NOTCOV)
+summary(model_lars)
+plot(model_lars)
+coef(model_lars)
+```
+```{r}
+library('rpart')
+# tree model 
+modeltree <- rpart(NOTCOV ~ AGE_P + I(AGE_P^2) + female + AfAm + Asian + RaceOther  
+                    + Hispanic + educ_hs + educ_smcoll + educ_as + educ_bach + educ_adv 
+                    + married+ widowed + divorc_sep + veteran_stat + REGION + region_born,data = dat_use, method = "class")
+summary(modeltree)
+post(modeltree, file = "tree_1.ps",
+title = "Classification Tree for Health Insurance")
+```
+```{r}
+library(glmnet)
+model1_elasticnet <-  glmnet(as.matrix(sobj$data[,-1]),sobj$data$NOTCOV) 
+# default is alpha = 1, lasso
+
+par(mar=c(4.5,4.5,1,4))
+plot(model1_elasticnet)
+vnat=coef(model1_elasticnet)
+vnat=vnat[-1,ncol(vnat)] # remove the intercept, and get the coefficients at the end of the path
+axis(4, at=vnat,line=-.5,label=names(sobj$data[,-1]),las=1,tick=FALSE, cex.axis=0.5) 
+
+plot(model1_elasticnet, xvar = "lambda")
+plot(model1_elasticnet, xvar = "dev", label = TRUE)
+print(model1_elasticnet)
+```
+lm model:
+pred        0     1
+  FALSE 32940  6631
+  TRUE    742  1264
+logit model:
+ pred        0     1
+  FALSE 32574  6342
+  TRUE   1108  1553
+svm model:
+  pred     0     1
+   0 32008  6095
+   1  1674  1800
+these three models, for the first one, the mis-classified is equal to (6631+742)/(32940+6631+742+1264)=0.177.
+for the second one, the mis-classified is equal to (6342+1108)/(32574+1553+6342+1108)=0.179
+for the third one, the mis-classified is equal to (6095+1674)/(32008+1800+6095+1674)=0.187
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## GitHub Documents
+
+This is an R Markdown format used for publishing markdown documents to GitHub. When you click the **Knit** button all R code chunks are run and a markdown file (.md) suitable for publishing to GitHub is generated.
+
+## Including Code
+
+You can include R code in the document as follows:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
